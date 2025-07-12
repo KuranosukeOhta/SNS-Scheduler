@@ -28,6 +28,7 @@ globs: *
   3. Move the contents of the temporary directory to the desired project directory.
   4. Delete the temporary directory.
 - When encountering errors related to `headers()` or `cookies()` within Server Actions, especially the error messages `Route "/login" used headers().get('origin')` or `cookies()` should be awaited before using its value`, refactor the code to separate the Server Actions' logic from the UI components. Move the server actions (e.g., `login`, `signup`, `loginWithGoogle`) to a separate `actions.ts` file and import them into the page component. This helps avoid conflicts with Next.js's rendering and data processing lifecycle.
+
 ## TESTING
 
 ## SECURITY
