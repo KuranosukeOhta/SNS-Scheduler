@@ -25,35 +25,46 @@ serve(async (req) => {
   }
 
   try {
+    // Use the service_role key to bypass RLS
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
     const now = new Date().toISOString()
 
     // 1. Get posts to be published
+    console.log(`Searching for posts with post_at < ${now}`)
     const { data: posts, error: postsError } = await supabase
       .from('posts')
       .select('*')
       .lt('post_at', now)
       .eq('is_posted', false)
 
-    if (postsError) throw postsError
+    if (postsError) {
+      console.error('Error fetching posts:', postsError)
+      return new Response(`Error fetching posts: ${postsError.message}`, {
+        status: 500,
+      })
+    }
 
+    console.log(`Found ${posts ? posts.length : 0} posts to publish.`)
     if (!posts || posts.length === 0) {
       return new Response('No posts to publish', { status: 200 })
     }
 
     // 2. Process each post
     for (const post of posts) {
-      // TODO: Get user's Twitter tokens from a secure table based on post.user_id
-      // For now, we'll use environment variables as placeholders
+      const appKey = Deno.env.get('TWITTER_API_KEY')!
+      const appSecret = Deno.env.get('TWITTER_API_SECRET')!
+      const accessToken = Deno.env.get('TWITTER_ACCESS_TOKEN')!
+      const accessSecret = Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!
+
       const userTwitterClient = new TwitterApi({
-        appKey: Deno.env.get('TWITTER_API_KEY')!,
-        appSecret: Deno.env.get('TWITTER_API_SECRET')!,
-        accessToken: Deno.env.get('TWITTER_ACCESS_TOKEN')!,
-        accessSecret: Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!,
+        appKey,
+        appSecret,
+        accessToken,
+        accessSecret,
       });
 
       // 3. Post tweet
