@@ -1,0 +1,36 @@
+
+## HEADERS
+
+## TECH STACK
+- Frontend: Next.js (App Router) + TailwindCSS + ShadCnUI
+- Backend: Supabase（Auth + DB） or Firebase
+- Deployment: Vercel
+- 外部連携: Twitter API v2（OAuth 2.0）
+
+## PROJECT DOCUMENTATION & CONTEXT SYSTEM
+
+## CODING STANDARDS
+
+## UI/UX GUIDELINES
+- Prioritize intuitive UI design.
+- Focus on ease of use for students and faculty.
+
+## WORKFLOW & RELEASE RULES
+
+## DEBUGGING
+- When `create-next-app` fails due to npm naming restrictions (e.g., capital letters in the directory name), use a temporary directory to create the project, then move the files to the desired directory.
+  1. Create a temporary directory (e.g., `temp-app`).
+  2. Create the Next.js project inside the temporary directory: `npx create-next-app@latest temp-app --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"`.
+  3. Move the contents of the temporary directory to the desired project directory.
+  4. Delete the temporary directory.
+
+## TESTING
+
+## SECURITY
+
+## DEPLOYMENT
+
+## EXTERNAL API INTEGRATIONS
+- Twitter API v2 (OAuth 2.0)
+
+## ERROR HANDLING
