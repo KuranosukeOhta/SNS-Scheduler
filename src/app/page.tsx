@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import PostForm from "@/components/post-form";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import PostsList from "@/components/posts-list";
 
 export default async function Home() {
-  const supabase = createClient();
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -12,9 +15,15 @@ export default async function Home() {
     return redirect('/login');
   }
 
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
   const signOut = async () => {
     'use server';
-    const supabase = createClient();
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
     await supabase.auth.signOut();
     return redirect('/login');
   }
@@ -33,7 +42,7 @@ export default async function Home() {
 
       <main>
         <PostForm user={user} />
-        {/* TODO: Add posts list component here */}
+        <PostsList posts={posts ?? []} />
       </main>
     </div>
   );

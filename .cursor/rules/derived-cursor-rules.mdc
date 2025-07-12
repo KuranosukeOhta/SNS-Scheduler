@@ -28,12 +28,47 @@ globs: *
   3. Move the contents of the temporary directory to the desired project directory.
   4. Delete the temporary directory.
 - When encountering errors related to `headers()` or `cookies()` within Server Actions, especially the error messages `Route "/login" used headers().get('origin')` or `cookies()` should be awaited before using its value`, refactor the code to separate the Server Actions' logic from the UI components. Move the server actions (e.g., `login`, `signup`, `loginWithGoogle`) to a separate `actions.ts` file and import them into the page component. This helps avoid conflicts with Next.js's rendering and data processing lifecycle.
-
 ## TESTING
 
 ## SECURITY
 
 ## DEPLOYMENT
+### Vercelへのデプロイ手順
+
+Vercelへのデプロイは、通常以下の流れで行います。
+
+**1. GitHubリポジトリにプッシュ**
+まず、ローカルのコードをGitHub上のリポジトリにプッシュする必要があります。
+もし、まだGitHubにこのプロジェクト用のリポジトリを作成していない場合は、[GitHub](https://github.com/new)で新しいリポジトリを作成してください。
+
+作成後、以下のコマンドをお使いのターミナルで実行して、ローカルリポジトリをGitHubに接続し、プッシュします。（`YOUR_USERNAME`と`YOUR_REPOSITORY_NAME`はご自身のものに置き換えてください。）
+
+```bash
+# GitHubリポジトリをリモートとして追加
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
+
+# ブランチ名をmainに設定
+git branch -M main
+
+# mainブランチにプッシュ
+git push -u origin main
+```
+
+**2. Vercelでプロジェクトを作成**
+1.  [Vercelのダッシュボード](https://vercel.com/dashboard)にアクセスし、「Add New...」>「Project」を選択します。
+2.  「Import Git Repository」のセクションで、先ほどプッシュしたGitHubリポジトリを選択し、「Import」をクリックします。
+
+**3. 環境変数の設定**
+プロジェクトの設定画面が開いたら、Supabaseのキーを設定する必要があります。
+1.  「Environment Variables」のセクションを開きます。
+2.  `.env.local` に設定したキーを、以下の名前で1つずつ追加します。
+    -   `NEXT_PUBLIC_SUPABASE_URL`
+    -   `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3.  値には、ご自身のSupabaseプロジェクトのURLとanonキーを貼り付けます。
+
+**4. デプロイ**
+環境変数を設定したら、「Deploy」ボタンをクリックします。
+ビルドとデプロイが自動的に開始され、完了すると公開URLが発行されます。
 
 ## EXTERNAL API INTEGRATIONS
 - Twitter API v2 (OAuth 2.0)
@@ -93,3 +128,40 @@ SupabaseでGoogle認証を有効にするには、Google Cloud Platform (GCP) �
 1.  SupabaseのAuthenticationの設定で、**Providers** > **Email** を選択します。
 2.  **Confirm email** のトグルをオフにします。
     -   **注意：** 本番リリース前には、セキュリティのため必ずオンに戻してください。
+
+## ROW LEVEL SECURITY (RLS) 設定
+
+SupabaseのテーブルにはRow Level Security (RLS) が設定されており、データへのアクセスを制御します。
+`new row violates row-level security policy` エラーは、テーブルへの書き込み権限がない場合に発生します。
+
+**投稿テーブル (`posts`) への書き込みを許可するポリシー設定**
+
+以下の手順に従って、`posts` テーブルへの書き込みを許可するポリシーを設定します。
+
+1. Supabaseプロジェクトのダッシュボードで、**Table Editor** を開きます。
+2. `posts` テーブルを選択します。
+3. **Policies** タブを開きます。
+4. **Create a new policy** ボタンをクリックします。
+5. テンプレートから作成ではなく、**Create from scratch** を選択します。
+6. ポリシーに名前を付けます（例: `Enable insert for authenticated users`）。
+7.  **INSERT** を選択します。
+8.  以下のSQL式を **Expression** エディタに入力します。
+
+```sql
+auth.uid() = user_id
+```
+
+   このSQL式は、「認証されたユーザーのID (`auth.uid()`) が、挿入しようとしている行の `user_id` と一致する場合にのみ、挿入を許可する」という意味です。これにより、ユーザーは自分の `user_id` を持つ投稿しか作成できなくなります。
+
+9. **Save** ボタンをクリックしてポリシーを保存します。
+   この設定により、認証されたユーザーは自分の投稿を作成できるようになります。
+
+## TWITTER API
+### API利用申請に必要なユースケース説明文
+Our application is a social media scheduling tool designed to help users, such as university faculty and student groups, manage their content posting schedule efficiently.
+
+The core functionality allows authenticated users to compose a tweet and schedule it for a future date and time. The application stores this scheduled content and its designated publication time within its own secure database, hosted on Supabase.
+
+A secure, automated backend process (a Supabase Edge Function) runs at regular intervals to check for tweets that are due for publication. When a scheduled time is reached, our application programmatically uses the Twitter API v2, specifically the `POST /2/tweets` endpoint, to publish the user's pre-composed content directly to their connected X account on their behalf.
+
+Our use of the Twitter API is strictly for content creation (write-only). We do not read, retrieve, analyze, or store any other data from the Twitter platform, such as user timelines, direct messages, follower lists, or profile information. The sole purpose of this API integration is to enable our users to post their own content at a time they have chosen.
