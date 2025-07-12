@@ -8,11 +8,19 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { TwitterApi } from 'npm:twitter-api-v2'
 
-const CRON_SECRET = Deno.env.get('CRON_SECRET')
-
 serve(async (req) => {
+  // More robust security check
+  const CRON_SECRET = Deno.env.get('CRON_SECRET')
+  if (!CRON_SECRET) {
+    console.error('CRON_SECRET environment variable is not set.')
+    return new Response('Internal Server Error: Service is not configured.', {
+      status: 500,
+    })
+  }
+
   const authHeader = req.headers.get('Authorization')
   if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    console.warn(`Unauthorized access attempt with header: ${authHeader}`)
     return new Response('Unauthorized', { status: 401 })
   }
 

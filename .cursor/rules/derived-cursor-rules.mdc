@@ -76,7 +76,6 @@ git push -u origin main
 
 ## ERROR HANDLING
 - When encountering issues with file editing being blocked, especially with `.env` files, rename the file temporarily, edit it, and then rename it back. This is due to potential tool restrictions.
-
 ## SUPABASE SETUP
 ### Supabaseプロジェクトの設定手順
 
@@ -166,3 +165,40 @@ The core functionality allows authenticated users to compose a tweet and schedul
 A secure, automated backend process (a Supabase Edge Function) runs at regular intervals to check for tweets that are due for publication. When a scheduled time is reached, our application programmatically uses the Twitter API v2, specifically the `POST /2/tweets` endpoint, to publish the user's pre-composed content directly to their connected X account on their behalf.
 
 Our use of the Twitter API is strictly for content creation (write-only). We do not read, retrieve, analyze, or store any other data from the Twitter platform, such as user timelines, direct messages, follower lists, or profile information. The sole purpose of this API integration is to enable our users to post their own content at a time they have chosen.
+
+## CRON JOB
+### EasyCronでの設定手順
+
+1.  [EasyCronのサイト](https://www.easycron.com/) にアクセスし、アカウントを登録します。
+2.  ダッシュボードで「**+ Create New Cron Job**」ボタンを押します。
+3.  以下の情報を入力します。
+    -   **Title**:
+        `SNS Scheduler Post-Scheduler` のように、分かりやすい名前を入力します。
+    -   **URL**:
+        ここに、デプロイ済みのSupabase Edge FunctionのURLを入力します。
+        `https://<YOUR_PROJECT_REF>.supabase.co/functions/v1/post-scheduler`
+    -   **Schedule**:
+        実行したいスケジュールを設定します。「Every 1 minute」などが選択できます。
+    -   **HTTP Method**:
+        `GET` を選択します。
+    -   **HTTP Headers**:
+        **これが最も重要です。** 「Add HTTP header」をクリックして、ヘッダーを追加します。
+        -   一つ目の入力欄（名前）に `Authorization` と入力します。
+        -   二つ目の入力欄（値）に `Bearer YOUR_CRON_SECRET` と入力します。`YOUR_CRON_SECRET` の部分は、先ほどSupabaseのシークレットに設定した、ご自身の秘密の文字列に置き換えてください。
+        -   **例**: `Bearer FjK9$2!zP@sW*&d`
+4.  設定が完了したら、「**Create**」ボタンを押してCron Jobを保存します。
+
+### Supabase Function テスト設定
+
+*   **HTTP Method**
+    *   `GET` を選択してください。（コードはどのメソッドでも受け付けますが、`GET`で問題ありません）
+
+*   **Headers**
+    *   **Key**: `Authorization`
+    *   **Value**: `Bearer b8748bab96620971c33ef990a12de3a1bbd528294b95640ac7d3d8b4c625d53b`
+        *   `Bearer` とシークレットキーの間に半角スペースが一つ入ります。
+        *   これは、先ほど設定したシークレットキーを使い、「このリクエストは正当な送信元（Cron-job.orgなど）からのものですよ」と証明するためのものです。
+        *   **Important:** The Supabase Test UI appears to be misinterpreting the "Authorization: Bearer" format. To test, use a `curl` command.
+
+*   **Query Parameters**
+    *   このFunctionはクエリパラメータを使用しないので、何も設定する必要はありません。空のままで大丈夫です。
