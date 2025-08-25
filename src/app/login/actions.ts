@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -23,10 +23,11 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const origin = headers().get('origin')
+  const headersList = await headers()
+  const origin = headersList.get('origin')
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
 
   const { error } = await supabase.auth.signUp({
@@ -45,9 +46,10 @@ export async function signup(formData: FormData) {
 }
 
 export async function loginWithGoogle() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
-  const origin = headers().get('origin')
+  const headersList = await headers()
+  const origin = headersList.get('origin')
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
