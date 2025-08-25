@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import PostsList from "@/components/posts-list";
 
 export default async function Home() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -22,7 +22,7 @@ export default async function Home() {
 
   const signOut = async () => {
     'use server';
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
     await supabase.auth.signOut();
     return redirect('/login');

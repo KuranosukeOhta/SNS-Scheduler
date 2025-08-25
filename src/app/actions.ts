@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 export async function deletePost(postId: number) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
   const { error } = await supabase
