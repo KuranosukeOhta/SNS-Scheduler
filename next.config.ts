@@ -5,12 +5,16 @@ const nextConfig: NextConfig = {
   // ビルド時に特定のディレクトリを除外
   webpack: (config) => {
     // Supabase Edge Functionsのディレクトリをビルドから除外
-    config.module.rules.push({
-      test: /supabase\/functions\/.*\.ts$/,
-      loader: 'ignore-loader'
+    config.externals = config.externals || [];
+    config.externals.push({
+      'supabase/functions': 'commonjs supabase/functions'
     });
     
     return config;
+  },
+  // ビルド時に特定のファイルを除外
+  experimental: {
+    excludeDefaultMomentLocales: true,
   },
 };
 

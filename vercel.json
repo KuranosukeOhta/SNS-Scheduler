@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "ignoreCommand": "echo 'Building Next.js app only'",
+  "functions": {
+    "supabase/functions/**/*": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}

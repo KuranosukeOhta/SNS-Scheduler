@@ -1,0 +1,16 @@
+# Supabase functions (Deno runtime)
+supabase/functions/
+
+# Supabase config
+supabase/config.toml
+
+# Development files
+.env.local
+.env.example
+.DS_Store
+*.log
+
+# Build artifacts
+.next/
+out/
+dist/
