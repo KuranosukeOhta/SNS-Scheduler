@@ -37,7 +37,9 @@ export default function PostsList({ posts }: PostsListProps) {
       {posts.map((post) => (
         <Card key={post.id}>
           <CardHeader>
-            <CardTitle className="text-lg">予約日時: {format(new Date(post.post_at), 'yyyy/MM/dd HH:mm')}</CardTitle>
+            <CardTitle className="text-lg">
+              予約日時: {post.post_at ? format(new Date(post.post_at), 'yyyy/MM/dd HH:mm') : '未設定'}
+            </CardTitle>
             <CardDescription>作成日: {format(new Date(post.created_at), 'yyyy/MM/dd')}</CardDescription>
           </CardHeader>
           <CardContent>
